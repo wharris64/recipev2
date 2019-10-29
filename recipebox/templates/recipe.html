@@ -1,0 +1,16 @@
+<h1>{{ recipe.title }}</h1>
+<br>
+{{ recipe.description }}
+<br>
+
+{% url 'author' arg1=recipe.author.id as authurl %}
+
+by <a href="/author/{{ pk }}">{{ recipe.author.name }}</a>
+
+<br>
+<br>
+Time to prep : {{ recipe.time_required }} minutes
+<br>
+<h3>Instructions</h3>
+<br>
+{{ recipe.instructions }}

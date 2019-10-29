@@ -1,0 +1,4 @@
+<h1>list of all the recipe that exist</h1>
+{% for recipe in recipes %}
+  {% include "recipe.html" with recipe=recipe pk=recipe.author.pk %}
+{% endfor %}
