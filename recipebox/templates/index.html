@@ -5,6 +5,12 @@
 
 <br>
 
-use /author/id and recipe/id to select specific recpie
+use /author/id and recipe/id to select specific recipes
+<br>
+<h2>List of all titles including url</h2>
+<br>
 
-{% comment %} {% %} {% endcomment %}
+{% for recipe in recipes %}
+  <a href="/recipe/{{ recipe.pk }}">{{ recipe.title }}</a>
+  <br>
+{% endfor %}
