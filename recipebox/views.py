@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from recipebox.models import Recipe, Author
+from recipebox.forms import AddAuthor, AddRecipe
 
 
 def index(request):
@@ -41,8 +42,29 @@ def authors(request):
         recipes = Recipe.objects.filter(author=auth)
         obj["recipes"] = recipes
         auth_arr.append(obj)
-
-
     authors = "authors.html"
 
     return render(request, authors, {"authors": auth_arr})
+
+
+def add_author(request):
+    if request.method == "POST":
+        form = AddAuthor(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            bio = form.cleaned_data['bio']
+            form.save()
+        
+    form = AddAuthor()
+    return render(request, 'generic_form.html', {'form':form})
+
+
+def add_recipe(request):
+    if request.method == "POST":
+        form = AddRecipe(request.POST)
+        if form.is_valid():
+            form.save()
+
+    form = AddRecipe()
+
+    return render(request, 'generic_form.html', {'form':form})
