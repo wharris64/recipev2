@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponseRedirect, reverse
 from django.http import HttpResponse
 from recipebox.models import Recipe, Author
-from recipebox.forms import AddAuthor, AddRecipe
+from recipebox.forms import AddAuthorForm, AddRecipeForm
 
 
 def index(request):
@@ -47,24 +47,36 @@ def authors(request):
     return render(request, authors, {"authors": auth_arr})
 
 
-def add_author(request):
+def addauthor(request):
     if request.method == "POST":
-        form = AddAuthor(request.POST)
+        form = AddAuthorForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data['name']
-            bio = form.cleaned_data['bio']
-            form.save()
-        
-    form = AddAuthor()
-    return render(request, 'generic_form.html', {'form':form})
+            data = form.cleaned_data
+            Author.objects.create(
+                name = data["name"],
+                bio = data["bio"],
+            )
+            return HttpResponseRedirect(reverse('homepage'))
+
+    form = AddAuthorForm()
+    return render(request, 'generic_form.html', {'form': form})
 
 
-def add_recipe(request):
+def addrecipe(request):
     if request.method == "POST":
-        form = AddRecipe(request.POST)
+        form = AddRecipeForm(request.POST)
         if form.is_valid():
-            form.save()
+            data = form.cleaned_data
 
-    form = AddRecipe()
+            Recipe.objects.create(
+                title = data["title"],
+                author = data["author"],
+                description = data["description"],
+                time_required = data["time_required"],
+                instructions = data["instructions"],
+            )
+            return HttpResponseRedirect(reverse('homepage'))
 
-    return render(request, 'generic_form.html', {'form':form})
+    form = AddRecipeForm()
+
+    return render(request, 'generic_form.html', {'form': form})

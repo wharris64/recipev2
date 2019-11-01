@@ -8,11 +8,11 @@ admin.site.register(Author)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index),
+    path('', views.index, name="homepage"),
     path('authors', views.authors, name='authors'),
     path('recipes', views.recipes, name='recipes'),
-    path('addrecipe/', views.add_recipe, name='recipe'),
-    path('addauthor/', views.add_author, name='recipe'),
+    path('addrecipe/', views.addrecipe, name='recipe'),
+    path('addauthor/', views.addauthor, name='recipe'),
     path('author/<int:key_id>/', views.author, name='author'),
     path('recipe/<int:key_id>/', views.recipe, name='recipe'),
 ]
