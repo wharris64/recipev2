@@ -1,7 +1,10 @@
-from django.shortcuts import render, HttpResponseRedirect, reverse
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.shortcuts import render, HttpResponseRedirect, reverse
+from recipebox.forms import AddAuthorForm, AddRecipeForm, LoginForm
 from recipebox.models import Recipe, Author
-from recipebox.forms import AddAuthorForm, AddRecipeForm
 
 
 def index(request):
@@ -47,14 +50,20 @@ def authors(request):
     return render(request, authors, {"authors": auth_arr})
 
 
+@user_passes_test(lambda u: u.is_superuser)
 def addauthor(request):
     if request.method == "POST":
         form = AddAuthorForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
+            u = User.objects.create_user(
+                username=data['name'],
+                password=data['password']
+            )
             Author.objects.create(
-                name = data["name"],
-                bio = data["bio"],
+                user=u,
+                name=data["name"],
+                bio=data.get('bio'),
             )
             return HttpResponseRedirect(reverse('homepage'))
 
@@ -62,21 +71,53 @@ def addauthor(request):
     return render(request, 'generic_form.html', {'form': form})
 
 
+@login_required
 def addrecipe(request):
     if request.method == "POST":
-        form = AddRecipeForm(request.POST)
+        form = AddRecipeForm(request.POST, isAdmin=request.user.is_staff)
         if form.is_valid():
+            print(dir(form))
+            # p = form.save(commit=False)
+            author=""
+            if not request.user.is_staff:
+                author = request.user.author
             data = form.cleaned_data
-
+            print(data)
             Recipe.objects.create(
-                title = data["title"],
-                author = data["author"],
-                description = data["description"],
-                time_required = data["time_required"],
-                instructions = data["instructions"],
+                title=data["title"],
+                author=data.get('author', author),
+                description=data["description"],
+                time_required=data["time_required"],
+                instructions=data["instructions"],
             )
-            return HttpResponseRedirect(reverse('homepage'))
+            # p.save()
 
-    form = AddRecipeForm()
+            return HttpResponseRedirect(reverse('homepage'))
+    form = AddRecipeForm(isAdmin=request.user.is_staff)
 
     return render(request, 'generic_form.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            if user:= (
+                    authenticate(
+                        username=data["username"],
+                        password=data["password"]
+                    )
+                ):
+                login(request, user)
+                return HttpResponseRedirect(
+                    request.GET.get('next',reverse('homepage'))
+                )
+
+    form = LoginForm()
+    return render(request, 'generic_form.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('homepage'))
