@@ -17,4 +17,7 @@ urlpatterns = [
     path('addauthor/', views.addauthor, name='recipe'),
     path('author/<int:key_id>/', views.author, name='author'),
     path('recipe/<int:key_id>/', views.recipe, name='recipe'),
+    path('editticket/<int:id>/', views.editrecipe),
+    path('favorite/<int:id>/', views.favorite, name='favorite')
+
 ]

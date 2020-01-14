@@ -14,3 +14,7 @@ Time to prep : {{ recipe.time_required }} minutes
 <h3>Instructions</h3>
 <br>
 {{ recipe.instructions }}
+<a href= "/editticket/{{ recipe.id }}/"><button>Edit</button>
+{% if user.is_authenticated %}
+<a href='/favorite/{{ recipe.pk }}/'><button> Add to Favorites</button> </a>
+{% endif %} 

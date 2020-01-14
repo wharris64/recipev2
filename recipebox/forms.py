@@ -1,5 +1,7 @@
 from recipebox.models import Author, Recipe
 from django import forms
+from django.contrib.auth.decorators import login_required
+from django.forms import ModelForm
 
 class AddAuthorForm(forms.Form):
     name = forms.CharField(label='Your name', max_length=100)
@@ -51,3 +53,9 @@ class AddRecipeForm(forms.Form):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=50)
     password = forms.CharField(widget=forms.PasswordInput)
+
+
+class Edit(ModelForm):
+    class Meta:
+        model = Recipe
+        fields = ['title', 'description', 'time_required', 'instructions']

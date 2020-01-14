@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect, reverse
-from recipebox.forms import AddAuthorForm, AddRecipeForm, LoginForm
+from recipebox.forms import AddAuthorForm, AddRecipeForm, LoginForm, Edit
 from recipebox.models import Recipe, Author
+
 
 
 def index(request):
@@ -24,9 +25,10 @@ def recipe(request, key_id):
 def author(request, key_id):
     author_obj = Author.objects.get(pk=key_id)
     recipes = [x for x in Recipe.objects.filter(author=author_obj)]
+    favorites = author_obj.favorites.all()
     author = "author.html"
 
-    return render(request, author, {"author": author_obj, "recipes": recipes})
+    return render(request, author, {"author": author_obj, "recipes": recipes, "favorites":favorites})
 
 
 def recipes(request):
@@ -70,7 +72,29 @@ def addauthor(request):
     form = AddAuthorForm()
     return render(request, 'generic_form.html', {'form': form})
 
+@login_required
+def editrecipe(request, id):
+    form = None
+    html = "editrecipe.html"
+    instance = Recipe.objects.get(pk=id)
+    if request.user.is_staff or request.user.author == instance.author:
+        form = Edit(instance=instance)
+        if request.method == "POST":
+            form = Edit(request.POST, instance=instance)
+            if form.is_valid():
+                recipe = form.save(commit=False)
+                recipe.author = instance.author
+                # breakpoint()
+                recipe.save()
+                
+            return HttpResponseRedirect(request.GET.get('next', '/'))
+        return render(request, html, {'form':form}) 
+    else:
+        return HttpResponseRedirect('/')
 
+
+  
+    
 @login_required
 def addrecipe(request):
     if request.method == "POST":
@@ -121,3 +145,10 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('homepage'))
+
+def favorite(request, id):
+    targeted_recipe = Recipe.objects.filter(id=id).first()
+    # breakpoint()
+    request.user.author.favorites.add(targeted_recipe)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
